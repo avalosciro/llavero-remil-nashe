@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llavero</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            gap: 20px;
+        }
+        h1 { font-size: 2rem; }
+        #boton {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            background: #e94560;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        #boton:active { transform: scale(0.95); }
+        #boton.grabando { background: #0f3460; animation: pulso 1s infinite; }
+        @keyframes pulso {
+            0% { box-shadow: 0 0 0 0 rgba(233,69,96,0.7); }
+            100% { box-shadow: 0 0 0 20px rgba(233,69,96,0); }
+        }
+        #estado { font-size: 1rem; color: #aaa; }
+        #resultado {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 300px;
+            width: 90%;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔑 Llavero</h1>
+    <button id="boton" onclick="toggleGrabacion()">Mantener para grabar</button>
+    <p id="estado">Listo</p>
+    <div id="resultado">
+        <p id="transcripcion"></p>
+        <p id="evento"></p>
+    </div>
+
+    <script>
+        const BACKEND = "https://llavero-remil-nashe.onrender.com";
+        let mediaRecorder;
+        let chunks = [];
+        let grabando = false;
+
+        async function toggleGrabacion() {
+            if (!grabando) {
+                chunks = [];
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = enviarAudio;
+                mediaRecorder.start();
+                grabando = true;
+                document.getElementById('boton').textContent = "Grabando... (tocar para parar)";
+                document.getElementById('boton').classList.add('grabando');
+                document.getElementById('estado').textContent = "Grabando...";
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                grabando = false;
+                document.getElementById('boton').textContent = "Mantener para grabar";
+                document.getElementById('boton').classList.remove('grabando');
+                document.getElementById('estado').textContent = "Enviando...";
+            }
+        }
+
+        async function enviarAudio() {
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', blob, 'audio.webm');
+
+            try {
+                const res = await fetch(`${BACKEND}/audio`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                document.getElementById('estado').textContent = "✅ Agendado";
+                document.getElementById('resultado').style.display = 'block';
+                document.getElementById('transcripcion').textContent = "📝 " + data.transcripcion;
+                document.getElementById('evento').textContent = "📅 " + data.evento;
+            } catch (err) {
+                document.getElementById('estado').textContent = "❌ Error, intentá de nuevo";
+            }
+        }
+    </script>
+</body>
+</html>
