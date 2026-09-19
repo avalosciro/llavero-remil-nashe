@@ -36,7 +36,7 @@ def extraer_evento(texto):
     }
     hoy = __import__('datetime').date.today().strftime("%Y-%m-%d")
     body = {
-        "model": "llama-3.2-3b-preview",
+        "model": "llama-3.3-70b-versatile",
         "messages": [
             {"role": "system", "content": f"""Extraé el evento del texto y respondé SOLO en este formato JSON sin ningún texto extra:
             {{"titulo": "...", "fecha": "YYYY-MM-DD", "hora": "HH:MM"}}
