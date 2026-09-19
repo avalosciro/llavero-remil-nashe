@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import requests
@@ -8,7 +8,6 @@ import os
 app = Flask(__name__)
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-SERVICE_ACCOUNT_FILE = "service_account.json"
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 def get_calendar_service():
@@ -17,9 +16,10 @@ def get_calendar_service():
         service_account_info, scopes=SCOPES
     )
     return build('calendar', 'v3', credentials=creds)
+
 def transcribir_audio(archivo):
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
-    files = {"file": ("audio.wav", archivo, "audio/wav")}
+    files = {"file": ("audio.webm", archivo, "audio/webm")}
     data = {"model": "whisper-large-v3-turbo"}
     respuesta = requests.post(
         "https://api.groq.com/openai/v1/audio/transcriptions",
@@ -75,6 +75,10 @@ def recibir_audio():
     print(f"Evento agregado: {evento_data['titulo']}")
 
     return jsonify({'ok': True, 'evento': evento_data['titulo'], 'transcripcion': texto})
+
+@app.route('/app')
+def interfaz():
+    return send_file('index.html')
 
 @app.route('/')
 def home():
