@@ -86,7 +86,7 @@
         async function enviarAudio() {
             const blob = new Blob(chunks, { type: 'audio/webm' });
             const formData = new FormData();
-            formData.append('audio', blob, 'audio.webm');
+            formData.append('audio', blob, 'audio.mp4');
 
             try {
                 const res = await fetch(`${BACKEND}/audio`, {

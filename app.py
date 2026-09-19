@@ -19,7 +19,7 @@ def get_calendar_service():
 
 def transcribir_audio(archivo):
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
-    files = {"file": ("audio.webm", archivo.read(), "audio/webm")}
+    files = {"file": ("audio.mp4", archivo.read(), "audio/mp4")}
     data = {"model": "whisper-large-v3-turbo"}
     respuesta = requests.post(
         "https://api.groq.com/openai/v1/audio/transcriptions",
@@ -27,6 +27,7 @@ def transcribir_audio(archivo):
         files=files,
         data=data
     )
+    print(f"Respuesta Groq: {respuesta.json()}")
     return respuesta.json().get("text", "")
 def extraer_evento(texto):
     headers = {
