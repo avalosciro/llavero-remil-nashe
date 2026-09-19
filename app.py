@@ -78,7 +78,7 @@ def recibir_audio():
 
 @app.route('/app')
 def interfaz():
-    return send_file('index.html')
+    return send_file(os.path.join(os.path.dirname(__file__), 'index.html'))
 
 @app.route('/')
 def home():
