@@ -45,12 +45,12 @@ def extraer_evento(texto):
         ]
     }
     respuesta = requests.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers=headers,
-        json=body
-    )
-    contenido = respuesta.json()["choices"][0]["message"]["content"]
-    return json.loads(contenido)
+    "https://api.groq.com/openai/v1/chat/completions",
+    headers=headers,
+    json=body
+)
+print(f"Respuesta Llama: {respuesta.json()}")
+contenido = respuesta.json()["choices"][0]["message"]["content"]
 
 @app.route('/audio', methods=['POST'])
 def recibir_audio():
