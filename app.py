@@ -73,7 +73,7 @@ def recibir_audio():
         'start': {'dateTime': fecha_hora, 'timeZone': 'America/Argentina/Cordoba'},
         'end': {'dateTime': fecha_hora, 'timeZone': 'America/Argentina/Cordoba'},
     }
-    service.events().insert(calendarId='primary', body=evento).execute()
+    service.events().insert(calendarId='avalosciro30@gmail.com', body=evento).execute()
     print(f"Evento agregado: {evento_data['titulo']}")
 
     return jsonify({'ok': True, 'evento': evento_data['titulo'], 'transcripcion': texto})
