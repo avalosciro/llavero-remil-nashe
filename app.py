@@ -29,6 +29,7 @@ def transcribir_audio(archivo):
     )
     print(f"Respuesta Groq: {respuesta.json()}")
     return respuesta.json().get("text", "")
+
 def extraer_evento(texto):
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
@@ -45,12 +46,13 @@ def extraer_evento(texto):
         ]
     }
     respuesta = requests.post(
-    "https://api.groq.com/openai/v1/chat/completions",
-    headers=headers,
-    json=body
-)
-print(f"Respuesta Llama: {respuesta.json()}")
-contenido = respuesta.json()["choices"][0]["message"]["content"]
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers=headers,
+        json=body
+    )
+    print(f"Respuesta Llama: {respuesta.json()}")
+    contenido = respuesta.json()["choices"][0]["message"]["content"]
+    return json.loads(contenido)
 
 @app.route('/audio', methods=['POST'])
 def recibir_audio():
