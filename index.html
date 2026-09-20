@@ -1,151 +1,148 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Llavero</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            background: #1a1a2e;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            gap: 20px;
-        }
-        h1 { font-size: 2rem; }
-        .boton {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: none;
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .boton:active { transform: scale(0.95); }
-        #botonGrabar { background: #e94560; }
-        #botonGrabar.grabando { background: #0f3460; animation: pulso 1s infinite; }
-        #botonSync { background: #0f7438; width: 120px; height: 120px; }
-        @keyframes pulso {
-            0% { box-shadow: 0 0 0 0 rgba(233,69,96,0.7); }
-            100% { box-shadow: 0 0 0 20px rgba(233,69,96,0); }
-        }
-        #estado { font-size: 1rem; color: #aaa; text-align: center; }
-        #resultado {
-            background: #0f3460;
-            padding: 15px;
-            border-radius: 10px;
-            max-width: 300px;
-            width: 90%;
-            display: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#17161F">
+<title>Llavero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <h1>🔑 Llavero</h1>
-    <button id="botonGrabar" class="boton" onclick="toggleGrabacion()">Grabar</button>
-    <button id="botonSync" class="boton" onclick="sincronizar()">Sync con llavero</button>
-    <p id="estado">Listo</p>
-    <div id="resultado">
-        <p id="transcripcion"></p>
-        <p id="evento"></p>
+
+<!-- ============ BARRA SUPERIOR ============ -->
+<header class="barra-sup">
+  <div class="fila-busqueda">
+    <input type="search" id="buscador" placeholder="Buscar" autocomplete="off">
+    <button id="btnSync" class="btn-icono sync" title="Sincronizar llavero">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+        <path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+      </svg>
+    </button>
+  </div>
+  <p id="migas" class="migas">Notas</p>
+</header>
+
+<!-- ============ CONTENIDO ============ -->
+<main id="contenido">
+
+  <!-- --------- VISTA NOTAS --------- -->
+  <section id="vistaNotas" class="vista activa">
+    <div id="gridNotas" class="grid"></div>
+    <div id="vacioNotas" class="vacio">
+      <span class="vacio-emoji">📝</span>
+      <p>Todavía no hay notas.</p>
+      <p class="vacio-sub">Tocá el + para escribir la primera.</p>
+    </div>
+  </section>
+
+  <!-- --------- VISTA LISTAS --------- -->
+  <section id="vistaListas" class="vista">
+    <div id="gridListas" class="grid"></div>
+    <div id="vacioListas" class="vacio">
+      <span class="vacio-emoji">✅</span>
+      <p>Todavía no hay listas.</p>
+      <p class="vacio-sub">Tocá el + para armar la primera.</p>
+    </div>
+  </section>
+
+  <!-- --------- VISTA EDITOR DE NOTA --------- -->
+  <section id="vistaNota" class="vista">
+    <input type="text" id="tituloNota" class="titulo-editable" placeholder="Título de la nota">
+
+    <div class="toolbar">
+      <button class="tb" data-cmd="bold"><b>B</b></button>
+      <button class="tb" data-cmd="italic"><i>I</i></button>
+      <button class="tb" data-cmd="underline"><u>U</u></button>
+      <button class="tb" data-cmd="strikeThrough"><s>S</s></button>
+      <button class="tb" data-cmd="insertUnorderedList">•—</button>
+      <select id="selTamano" class="tb-sel">
+        <option value="2">Chico</option>
+        <option value="3" selected>Normal</option>
+        <option value="5">Grande</option>
+        <option value="7">Titular</option>
+      </select>
+      <select id="selFuente" class="tb-sel">
+        <option value="'Space Grotesk',sans-serif">Space</option>
+        <option value="Georgia,serif">Georgia</option>
+        <option value="'Courier New',monospace">Mono</option>
+        <option value="'Archivo Black',sans-serif">Archivo</option>
+      </select>
+      <div class="colores">
+        <button class="sw" data-color="#F2F0F7" style="background:#F2F0F7"></button>
+        <button class="sw" data-color="#9FE8C8" style="background:#9FE8C8"></button>
+        <button class="sw" data-color="#C0AEF0" style="background:#C0AEF0"></button>
+        <button class="sw" data-color="#FFB59C" style="background:#FFB59C"></button>
+        <button class="sw" data-color="#FFDD8F" style="background:#FFDD8F"></button>
+      </div>
     </div>
 
-    <script>
-        const BACKEND = "https://llavero-remil-nashe.onrender.com";
-        const SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
-        const CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
+    <div id="cuerpoNota" class="cuerpo" contenteditable="true" data-placeholder="Escribí acá, o dictá con el micrófono."></div>
 
-        let mediaRecorder;
-        let chunks = [];
-        let grabando = false;
-        let bleChar = null;
+    <div class="acciones-editor">
+      <button id="micNota" class="btn-bloque menta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+        Dictar
+      </button>
+      <button id="borrarNota" class="btn-bloque durazno">Eliminar</button>
+    </div>
+  </section>
 
-        async function toggleGrabacion() {
-            if (!grabando) {
-                chunks = [];
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = enviarAudio;
-                mediaRecorder.start();
-                grabando = true;
-                document.getElementById('botonGrabar').textContent = "Parar";
-                document.getElementById('botonGrabar').classList.add('grabando');
-                document.getElementById('estado').textContent = "Grabando...";
-            } else {
-                mediaRecorder.stop();
-                mediaRecorder.stream.getTracks().forEach(t => t.stop());
-                grabando = false;
-                document.getElementById('botonGrabar').textContent = "Grabar";
-                document.getElementById('botonGrabar').classList.remove('grabando');
-                document.getElementById('estado').textContent = "Enviando...";
-            }
-        }
+  <!-- --------- VISTA EDITOR DE LISTA --------- -->
+  <section id="vistaLista" class="vista">
+    <input type="text" id="tituloLista" class="titulo-editable" placeholder="Título de la lista">
 
-        async function enviarAudio() {
-            const blob = new Blob(chunks, { type: 'audio/mp4' });
-            const formData = new FormData();
-            formData.append('audio', blob, 'audio.mp4');
-            try {
-                const res = await fetch(`${BACKEND}/audio`, { method: 'POST', body: formData });
-                const data = await res.json();
-                document.getElementById('estado').textContent = "✅ Agendado";
-                document.getElementById('resultado').style.display = 'block';
-                document.getElementById('transcripcion').textContent = "📝 " + data.transcripcion;
-                document.getElementById('evento').textContent = "📅 " + data.evento;
-            } catch (err) {
-                document.getElementById('estado').textContent = "❌ Error, intentá de nuevo";
-            }
-        }
+    <div class="agregar-item">
+      <input type="text" id="nuevoItem" placeholder="Agregar ítem" autocomplete="off">
+      <button id="addItem" class="btn-icono lila">+</button>
+    </div>
 
-        async function sincronizar() {
-            try {
-                document.getElementById('estado').textContent = "Conectando al llavero...";
-                const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ name: 'Llavero' }],
-                    optionalServices: [SERVICE_UUID]
-                });
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService(SERVICE_UUID);
-                bleChar = await service.getCharacteristic(CHAR_UUID);
-                document.getElementById('estado').textContent = "Llavero conectado, obteniendo eventos...";
+    <ul id="itemsLista" class="items"></ul>
 
-                const res = await fetch(`${BACKEND}/eventos`);
-                const data = await res.json();
-                const eventos = data.eventos;
+    <div class="acciones-editor">
+      <button id="micLista" class="btn-bloque menta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+        Dictar ítem
+      </button>
+      <button id="borrarLista" class="btn-bloque durazno">Eliminar</button>
+    </div>
+  </section>
 
-                if (eventos.length === 0) {
-                    await enviarBLE("Sin eventos hoy");
-                } else {
-                    let mensaje = "";
-                    for (let e of eventos) {
-                        mensaje += `${e.hora} ${e.titulo}|`;
-                    }
-                    await enviarBLE(mensaje);
-                }
-                document.getElementById('estado').textContent = "✅ Llavero sincronizado";
-            } catch (err) {
-                document.getElementById('estado').textContent = "❌ Error: " + err.message;
-            }
-        }
+</main>
 
-        async function enviarBLE(texto) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(texto);
-            const chunkSize = 20;
-            for (let i = 0; i < data.length; i += chunkSize) {
-                const chunk = data.slice(i, i + chunkSize);
-                await bleChar.writeValue(chunk);
-                await new Promise(r => setTimeout(r, 50));
-            }
-        }
-    </script>
+<!-- ============ BOTÓN FLOTANTE NUEVO ============ -->
+<button id="btnNuevo" class="fab-nuevo">+</button>
+
+<!-- ============ NAV INFERIOR ============ -->
+<nav class="nav-inf">
+  <button id="navNotas" class="nav-btn activo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 3h11l5 5v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M8 13h8"/><path d="M8 17h5"/>
+    </svg>
+    <span>Notas</span>
+  </button>
+
+  <button id="btnGrabar" class="fab-grabar" aria-label="Grabar y agendar">
+    <svg class="ico-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>
+    </svg>
+    <span class="ico-stop"></span>
+  </button>
+
+  <button id="navListas" class="nav-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="m3 6 1 1 2-2"/><path d="m3 12 1 1 2-2"/><path d="m3 18 1 1 2-2"/>
+    </svg>
+    <span>Listas</span>
+  </button>
+</nav>
+
+<!-- ============ AVISO ============ -->
+<div id="aviso" class="aviso"></div>
+
+<script src="/app.js"></script>
 </body>
 </html>
