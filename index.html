@@ -18,24 +18,25 @@
             gap: 20px;
         }
         h1 { font-size: 2rem; }
-        #boton {
+        .boton {
             width: 150px;
             height: 150px;
             border-radius: 50%;
             border: none;
-            background: #e94560;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: transform 0.1s;
         }
-        #boton:active { transform: scale(0.95); }
-        #boton.grabando { background: #0f3460; animation: pulso 1s infinite; }
+        .boton:active { transform: scale(0.95); }
+        #botonGrabar { background: #e94560; }
+        #botonGrabar.grabando { background: #0f3460; animation: pulso 1s infinite; }
+        #botonSync { background: #0f7438; width: 120px; height: 120px; }
         @keyframes pulso {
             0% { box-shadow: 0 0 0 0 rgba(233,69,96,0.7); }
             100% { box-shadow: 0 0 0 20px rgba(233,69,96,0); }
         }
-        #estado { font-size: 1rem; color: #aaa; }
+        #estado { font-size: 1rem; color: #aaa; text-align: center; }
         #resultado {
             background: #0f3460;
             padding: 15px;
@@ -48,7 +49,8 @@
 </head>
 <body>
     <h1>🔑 Llavero</h1>
-    <button id="boton" onclick="toggleGrabacion()">Mantener para grabar</button>
+    <button id="botonGrabar" class="boton" onclick="toggleGrabacion()">Grabar</button>
+    <button id="botonSync" class="boton" onclick="sincronizar()">Sync con llavero</button>
     <p id="estado">Listo</p>
     <div id="resultado">
         <p id="transcripcion"></p>
@@ -57,9 +59,13 @@
 
     <script>
         const BACKEND = "https://llavero-remil-nashe.onrender.com";
+        const SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
+        const CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
+
         let mediaRecorder;
         let chunks = [];
         let grabando = false;
+        let bleChar = null;
 
         async function toggleGrabacion() {
             if (!grabando) {
@@ -70,29 +76,25 @@
                 mediaRecorder.onstop = enviarAudio;
                 mediaRecorder.start();
                 grabando = true;
-                document.getElementById('boton').textContent = "Grabando... (tocar para parar)";
-                document.getElementById('boton').classList.add('grabando');
+                document.getElementById('botonGrabar').textContent = "Parar";
+                document.getElementById('botonGrabar').classList.add('grabando');
                 document.getElementById('estado').textContent = "Grabando...";
             } else {
                 mediaRecorder.stop();
                 mediaRecorder.stream.getTracks().forEach(t => t.stop());
                 grabando = false;
-                document.getElementById('boton').textContent = "Mantener para grabar";
-                document.getElementById('boton').classList.remove('grabando');
+                document.getElementById('botonGrabar').textContent = "Grabar";
+                document.getElementById('botonGrabar').classList.remove('grabando');
                 document.getElementById('estado').textContent = "Enviando...";
             }
         }
 
         async function enviarAudio() {
-            const blob = new Blob(chunks, { type: 'audio/webm' });
+            const blob = new Blob(chunks, { type: 'audio/mp4' });
             const formData = new FormData();
             formData.append('audio', blob, 'audio.mp4');
-
             try {
-                const res = await fetch(`${BACKEND}/audio`, {
-                    method: 'POST',
-                    body: formData
-                });
+                const res = await fetch(`${BACKEND}/audio`, { method: 'POST', body: formData });
                 const data = await res.json();
                 document.getElementById('estado').textContent = "✅ Agendado";
                 document.getElementById('resultado').style.display = 'block';
@@ -100,6 +102,48 @@
                 document.getElementById('evento').textContent = "📅 " + data.evento;
             } catch (err) {
                 document.getElementById('estado').textContent = "❌ Error, intentá de nuevo";
+            }
+        }
+
+        async function sincronizar() {
+            try {
+                document.getElementById('estado').textContent = "Conectando al llavero...";
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: 'Llavero' }],
+                    optionalServices: [SERVICE_UUID]
+                });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                bleChar = await service.getCharacteristic(CHAR_UUID);
+                document.getElementById('estado').textContent = "Llavero conectado, obteniendo eventos...";
+
+                const res = await fetch(`${BACKEND}/eventos`);
+                const data = await res.json();
+                const eventos = data.eventos;
+
+                if (eventos.length === 0) {
+                    await enviarBLE("Sin eventos hoy");
+                } else {
+                    let mensaje = "";
+                    for (let e of eventos) {
+                        mensaje += `${e.hora} ${e.titulo}|`;
+                    }
+                    await enviarBLE(mensaje);
+                }
+                document.getElementById('estado').textContent = "✅ Llavero sincronizado";
+            } catch (err) {
+                document.getElementById('estado').textContent = "❌ Error: " + err.message;
+            }
+        }
+
+        async function enviarBLE(texto) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(texto);
+            const chunkSize = 20;
+            for (let i = 0; i < data.length; i += chunkSize) {
+                const chunk = data.slice(i, i + chunkSize);
+                await bleChar.writeValue(chunk);
+                await new Promise(r => setTimeout(r, 50));
             }
         }
     </script>
