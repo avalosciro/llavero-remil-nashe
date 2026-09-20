@@ -4,6 +4,7 @@ from googleapiclient.discovery import build
 import requests
 import json
 import os
+import datetime
 
 app = Flask(__name__)
 
@@ -35,7 +36,7 @@ def extraer_evento(texto):
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
-    hoy = __import__('datetime').date.today().strftime("%Y-%m-%d")
+    hoy = datetime.date.today().strftime("%Y-%m-%d")
     body = {
         "model": "openai/gpt-oss-20b",
         "messages": [
@@ -77,6 +78,33 @@ def recibir_audio():
     print(f"Evento agregado: {evento_data['titulo']}")
 
     return jsonify({'ok': True, 'evento': evento_data['titulo'], 'transcripcion': texto})
+
+@app.route('/eventos', methods=['GET'])
+def obtener_eventos():
+    service = get_calendar_service()
+
+    hoy = datetime.date.today()
+    inicio = f"{hoy}T00:00:00-03:00"
+    fin = f"{hoy}T23:59:59-03:00"
+
+    resultado = service.events().list(
+        calendarId='avalosciro30@gmail.com',
+        timeMin=inicio,
+        timeMax=fin,
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+
+    eventos = resultado.get('items', [])
+    lista = []
+    for e in eventos:
+        titulo = e.get('summary', 'Sin título')
+        hora = e.get('start', {}).get('dateTime', '')
+        if hora:
+            hora = hora[11:16]
+        lista.append({'titulo': titulo, 'hora': hora})
+
+    return jsonify({'eventos': lista})
 
 @app.route('/app')
 def interfaz():
