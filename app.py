@@ -9,7 +9,10 @@ import datetime
 app = Flask(__name__)
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+CALENDAR_ID = "avalosciro30@gmail.com"
 SCOPES = ['https://www.googleapis.com/auth/calendar']
+BASE = os.path.dirname(__file__)
+
 
 def get_calendar_service():
     service_account_info = json.loads(os.environ.get("GOOGLE_SERVICE_ACCOUNT"))
@@ -17,6 +20,7 @@ def get_calendar_service():
         service_account_info, scopes=SCOPES
     )
     return build('calendar', 'v3', credentials=creds)
+
 
 def transcribir_audio(archivo):
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
@@ -30,6 +34,7 @@ def transcribir_audio(archivo):
     )
     print(f"Respuesta Groq: {respuesta.json()}")
     return respuesta.json().get("text", "")
+
 
 def extraer_evento(texto):
     headers = {
@@ -55,14 +60,17 @@ def extraer_evento(texto):
     contenido = respuesta.json()["choices"][0]["message"]["content"]
     return json.loads(contenido)
 
+
+# ---------- Grabar y agendar ----------
 @app.route('/audio', methods=['POST'])
 def recibir_audio():
     if 'audio' not in request.files:
         return jsonify({'error': 'No se recibió audio'}), 400
 
-    audio_file = request.files['audio']
-    texto = transcribir_audio(audio_file)
+    texto = transcribir_audio(request.files['audio'])
     print(f"Transcripción: {texto}")
+    if not texto.strip():
+        return jsonify({'error': 'No se entendió el audio'}), 400
 
     evento_data = extraer_evento(texto)
     print(f"Evento: {evento_data}")
@@ -74,45 +82,65 @@ def recibir_audio():
         'start': {'dateTime': fecha_hora, 'timeZone': 'America/Argentina/Cordoba'},
         'end': {'dateTime': fecha_hora, 'timeZone': 'America/Argentina/Cordoba'},
     }
-    service.events().insert(calendarId='avalosciro30@gmail.com', body=evento).execute()
+    service.events().insert(calendarId=CALENDAR_ID, body=evento).execute()
     print(f"Evento agregado: {evento_data['titulo']}")
 
     return jsonify({'ok': True, 'evento': evento_data['titulo'], 'transcripcion': texto})
 
+
+# ---------- Solo transcribir (notas y listas) ----------
+@app.route('/transcribir', methods=['POST'])
+def solo_transcribir():
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No se recibió audio'}), 400
+    texto = transcribir_audio(request.files['audio'])
+    print(f"Transcripción nota: {texto}")
+    return jsonify({'ok': True, 'texto': texto})
+
+
+# ---------- Eventos de hoy ----------
 @app.route('/eventos', methods=['GET'])
 def obtener_eventos():
     service = get_calendar_service()
-
     hoy = datetime.date.today()
-    inicio = f"{hoy}T00:00:00-03:00"
-    fin = f"{hoy}T23:59:59-03:00"
-
     resultado = service.events().list(
-        calendarId='avalosciro30@gmail.com',
-        timeMin=inicio,
-        timeMax=fin,
+        calendarId=CALENDAR_ID,
+        timeMin=f"{hoy}T00:00:00-03:00",
+        timeMax=f"{hoy}T23:59:59-03:00",
         singleEvents=True,
         orderBy='startTime'
     ).execute()
 
-    eventos = resultado.get('items', [])
     lista = []
-    for e in eventos:
-        titulo = e.get('summary', 'Sin título')
+    for e in resultado.get('items', []):
         hora = e.get('start', {}).get('dateTime', '')
-        if hora:
-            hora = hora[11:16]
-        lista.append({'titulo': titulo, 'hora': hora})
-
+        lista.append({
+            'titulo': e.get('summary', 'Sin titulo'),
+            'hora': hora[11:16] if hora else '--:--'
+        })
     return jsonify({'eventos': lista})
 
+
+# ---------- Archivos de la interfaz ----------
 @app.route('/app')
 def interfaz():
-    return send_file(os.path.join(os.path.dirname(__file__), 'index.html'))
+    return send_file(os.path.join(BASE, 'index.html'))
+
+
+@app.route('/styles.css')
+def css():
+    return send_file(os.path.join(BASE, 'styles.css'), mimetype='text/css')
+
+
+@app.route('/app.js')
+def js():
+    return send_file(os.path.join(BASE, 'app.js'), mimetype='application/javascript')
+
 
 @app.route('/')
 def home():
     return "Backend Llavero funcionando"
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
