@@ -294,7 +294,7 @@ async function sincronizar(){
   try{
     avisar("Buscando el llavero…", "trabajando", 0);
     const device = await navigator.bluetooth.requestDevice({
-      filters:[{ name:"Llavero" }],
+      filters:[{ namePrefix:"Llavero" }],
       optionalServices:[SERVICE_UUID]
     });
     const server  = await device.gatt.connect();
