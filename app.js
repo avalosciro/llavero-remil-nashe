@@ -348,6 +348,9 @@ $("btnGrabar").onclick = () => alternarGrabacion($("btnGrabar"), agendarAudio);
 /* --- Sync --- */
 $("btnSync").onclick = sincronizar;
 
+/* --- Cambiar tema --- */
+$("btnTema").onclick = alternarTema;
+
 /* --- Editor de nota --- */
 $("tituloNota").oninput     = guardarNota;
 $("cuerpoNota").oninput     = guardarNota;
@@ -411,7 +414,37 @@ window.addEventListener("popstate", () => {
 });
 
 /* ============================================================
+   TEMAS
+   ============================================================ */
+const Tema = {
+  NEO_BRUTALISTA: "neo-brutalista",
+  Y2K: "y2k",
+  clave: "llavero_tema"
+};
+
+function cargarTema(){
+  const temaGuardado = localStorage.getItem(Tema.clave);
+  if (temaGuardado === Tema.Y2K){
+    document.body.classList.add("tema-y2k");
+    // Opcional: cambiar icono a estrella (ya está como star, pero podríamos cambiar)
+  } else {
+    document.body.classList.remove("tema-y2k");
+  }
+}
+
+function guardarTema(tema){
+  localStorage.setItem(Tema.clave, tema);
+}
+
+function alternarTema(){
+  const esY2K = document.body.classList.toggle("tema-y2k");
+  const tema = esY2K ? Tema.Y2K : Tema.NEO_BRUTALISTA;
+  guardarTema(tema);
+}
+
+/* ============================================================
    ARRANQUE
    ============================================================ */
 cargar();
+cargarTema(); // Cargar tema guardado
 ir("notas");

@@ -1,4 +1,4 @@
-/* ===================== TOKENS ===================== */
+/* ===================== TOKENS — NEO BRUTALISTA (default) ===================== */
 :root{
   --tinta:      #17161F;
   --superficie: #211F2D;
@@ -20,6 +20,187 @@
   --sup: env(safe-area-inset-top, 0px);
   --inf: env(safe-area-inset-bottom, 0px);
 }
+
+/* ===================== TEMA Y2K ===================== */
+body.tema-y2k{
+  --tinta:      #0A0A1A;
+  --superficie: #12122A;
+  --superficie2:#1A1A3A;
+  --negro:      #000000;
+  --texto:      #FFFFFF;
+  --texto-tenue:#B8B8D0;
+
+  /* Paleta Y2K: neones brillantes */
+  --menta:   #00FFCC;   /* cyan neón */
+  --lila:    #BC8CFF;   /* púrpura neón */
+  --durazno: #FF3366;   /* rosa hot */
+  --manteca: #FFCC00;   /* amarillo neón */
+  --cielo:   #00FFFF;   /* cyan puro */
+
+  --borde: 2px solid var(--negro);
+  --dura:  0 0 20px var(--lila), 0 0 40px var(--durazno);
+  --dura-chica: 0 0 10px var(--menta);
+
+  /* Gradientes de fondo Y2K */
+  --gradiente-fondo: radial-gradient(ellipse 80% 50% at 50% 0%, #1A0A2E 0%, #0A0A1A 60%, #050515 100%);
+  --gradiente-tarjeta: linear-gradient(135deg, rgba(188,140,255,0.15) 0%, rgba(0,255,204,0.1) 100%);
+  --glow-menta:   0 0 10px #00FFCC, 0 0 20px #00FFCC;
+  --glow-lila:    0 0 10px #BC8CFF, 0 0 20px #BC8CFF;
+  --glow-durazno: 0 0 10px #FF3366, 0 0 20px #FF3366;
+  --glow-manteca: 0 0 10px #FFCC00, 0 0 20px #FFCC00;
+}
+
+/* Animaciones Y2K */
+@keyframes flotar{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-4px); }
+}
+@keyframes pulso-neon{
+  0%,100%{ opacity:1; }
+  50%{ opacity:0.6; }
+}
+
+body.tema-y2k .tarjeta{
+  background:var(--gradiente-tarjeta) !important;
+  border-radius:16px;
+  border:2px solid transparent;
+  background-clip:padding-box;
+  box-shadow:var(--dura);
+  animation:flotar 3s ease-in-out infinite;
+}
+body.tema-y2k .tarjeta:nth-child(odd){ animation-delay:0.5s; }
+body.tema-y2k .tarjeta:nth-child(3n){ animation-delay:1s; }
+
+body.tema-y2k .tarjeta::before{
+  content:"";
+  position:absolute; inset:-2px;
+  border-radius:18px;
+  background:linear-gradient(135deg, var(--lila), var(--menta), var(--durazno));
+  z-index:-1;
+  opacity:0.3;
+  filter:blur(8px);
+}
+
+body.tema-y2k .barra-sup,
+body.tema-y2k .nav-inf{
+  background:rgba(18,18,42,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(188,140,255,0.3);
+}
+body.tema-y2k .nav-inf{ border-top:1px solid rgba(188,140,255,0.3); }
+
+body.tema-y2k #buscador,
+body.tema-y2k .titulo-editable,
+body.tema-y2k #nuevoItem,
+body.tema-y2k .cuerpo{
+  background:var(--superficie);
+  border:2px solid rgba(188,140,255,0.4);
+  box-shadow:var(--dura-chica);
+  border-radius:12px;
+}
+body.tema-y2k #buscador:focus,
+body.tema-y2k .titulo-editable:focus,
+body.tema-y2k #nuevoItem:focus,
+body.tema-y2k .cuerpo:focus{
+  box-shadow:var(--glow-lila);
+  border-color:var(--lila);
+  transform:none;
+}
+
+body.tema-y2k .btn-icono,
+body.tema-y2k .tb,
+body.tema-y2k .tb-sel,
+body.tema-y2k .sw{
+  border-radius:8px;
+  border:2px solid rgba(188,140,255,0.4);
+  box-shadow:var(--dura-chica);
+}
+body.tema-y2k .btn-icono.sync{ background:linear-gradient(135deg, var(--cielo), var(--menta)); }
+body.tema-y2k .btn-icono.lila{ background:linear-gradient(135deg, var(--lila), var(--durazno)); }
+body.tema-y2k .btn-icono:active{ transform:none; box-shadow:var(--glow-menta); }
+
+body.tema-y2k .toolbar{
+  background:var(--superficie);
+  border:2px solid rgba(188,140,255,0.3);
+  border-radius:12px;
+  box-shadow:var(--dura-chica);
+}
+
+body.tema-y2k .btn-bloque{
+  border-radius:12px;
+  border:2px solid var(--negro);
+  box-shadow:var(--dura);
+}
+body.tema-y2k .btn-bloque.menta{ background:linear-gradient(135deg, var(--menta), #00D4AA); box-shadow:var(--glow-menta); }
+body.tema-y2k .btn-bloque.durazno{ background:linear-gradient(135deg, var(--durazno), #FF1A55); box-shadow:var(--glow-durazno); }
+body.tema-y2k .btn-bloque.grabando{ background:linear-gradient(135deg, #FF3366, #FF0044); animation:pulso-neon 1s ease-in-out infinite; }
+
+body.tema-y2k .fab-nuevo{
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--manteca), #FFB800);
+  box-shadow:var(--glow-manteca);
+}
+body.tema-y2k .fab-nuevo:active{ transform:scale(0.95); box-shadow:var(--glow-manteca); }
+
+body.tema-y2k .nav-btn{
+  border-radius:10px;
+  border:2px solid transparent;
+}
+body.tema-y2k .nav-btn.activo{
+  background:linear-gradient(135deg, var(--lila), var(--durazno));
+  box-shadow:var(--glow-lila);
+  color:var(--negro);
+}
+
+body.tema-y2k .fab-grabar{
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--durazno), #FF0044);
+  box-shadow:var(--glow-durazno);
+}
+body.tema-y2k .fab-grabar.grabando{ background:linear-gradient(135deg, #FF0044, #CC0033); box-shadow:var(--glow-durazno); }
+
+body.tema-y2k .item{
+  border-radius:12px;
+  border:2px solid rgba(188,140,255,0.3);
+  box-shadow:var(--dura-chica);
+  background:var(--superficie);
+}
+body.tema-y2k .item .caja{
+  border-radius:6px;
+  border:2px solid rgba(188,140,255,0.5);
+}
+body.tema-y2k .item.hecho .caja{ background:var(--menta); box-shadow:var(--glow-menta); }
+body.tema-y2k .item .quitar{
+  border-radius:8px;
+  border:2px solid rgba(255,51,102,0.5);
+  background:linear-gradient(135deg, var(--durazno), #FF0044);
+}
+
+body.tema-y2k .aviso{
+  border-radius:12px;
+  border:2px solid var(--negro);
+  box-shadow:var(--dura);
+}
+body.tema-y2k .aviso.trabajando{ background:linear-gradient(135deg, var(--manteca), #FFB800); box-shadow:var(--glow-manteca); }
+body.tema-y2k .aviso.error{ background:linear-gradient(135deg, var(--durazno), #FF0044); box-shadow:var(--glow-durazno); }
+
+body.tema-y2k .vacio{
+  border:3px dashed rgba(188,140,255,0.3);
+  border-radius:16px;
+  background:var(--gradiente-tarjeta);
+}
+
+body.tema-y2k .migas{
+  background:linear-gradient(90deg, var(--menta), var(--lila), var(--durazno));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+body.tema-y2k ::-webkit-scrollbar{ width:8px; height:8px; }
+body.tema-y2k ::-webkit-scrollbar-track{ background:var(--tinta); }
+body.tema-y2k ::-webkit-scrollbar-thumb{ background:linear-gradient(180deg, var(--lila), var(--menta)); border-radius:4px; }
+body.tema-y2k ::-webkit-scrollbar-thumb:hover{ background:linear-gradient(180deg, var(--durazno), var(--lila)); }
 
 *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
