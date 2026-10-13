@@ -326,6 +326,31 @@ svg{ width:22px; height:22px; }
 .vacio p{ font-weight:700; color:var(--texto); }
 .vacio-sub{ font-weight:400 !important; color:var(--texto-tenue) !important; margin-top:4px; font-size:14px; }
 
+/* ===================== SECCIONES (Hábitos / Gratitud) ===================== */
+.seccion{
+  margin-bottom:24px;
+}
+.seccion-título{
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:10px;
+}
+.seccion-título span{
+  font-size:20px;
+}
+.seccion-título h2{
+  font-family:'Archivo Black',sans-serif;
+  font-size:18px;
+  flex:1;
+}
+.seccion-título .btn-icono{
+  width:36px; height:36px;
+  font-size:22px;
+}
+.mini{
+  font-size:12px; color:var(--texto-tenue);
+  margin-top:6px;
+}
+
 /* ===================== EDITOR ===================== */
 .titulo-editable{
   width:100%;
@@ -412,6 +437,21 @@ svg{ width:22px; height:22px; }
 #nuevoItem::placeholder{ color:var(--texto-tenue); }
 
 .items{ list-style:none; display:flex; flex-direction:column; gap:10px; }
+
+/* ===================== HISTORIAL HÁBITOS ===================== */
+.historial-item{
+  display:flex; align-items:center; gap:6px; margin:4px 0;
+}
+.historial-item .fecha{
+  font-size:11px; color:var(--texto-tenue); width:20px;
+}
+.historial-item .check{
+  width:16px; height:16px; border:2px solid var(--negro);
+  border-radius:4px; flex-shrink:0; cursor:pointer;
+}
+.historial-item.hecho .check{ background:var(--menta); }
+
+/* ===================== EDITOR ===================== */
 .item{
   display:flex; align-items:center; gap:12px;
   background:var(--superficie);

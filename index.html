@@ -117,6 +117,46 @@
     </div>
   </section>
 
+  <!-- --------- VISTA HÁBITOS + GRATITUD --------- -->
+  <section id="vistaHabitos" class="vista">
+    <div class="seccion">
+      <div class="seccion-título">
+        <span>🌟</span>
+        <h2>Gratitud</h2>
+      </div>
+      <textarea id="gratitud" class="cuerpo" placeholder="Agradecimiento de hoy…" rows="2"></textarea>
+      <p class="mini">Se guarda automáticamente al salir.</p>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-título">
+        <span>🔁</span>
+        <h2>Hábitos</h2>
+        <button id="nuevoHabito" class="btn-icono lila" title="Nuevo hábito">+</button>
+      </div>
+      <div id="gridHabitos" class="grid"></div>
+      <div id="vacioHabitos" class="vacio">
+        <span class="vacio-emoji">🎯</span>
+        <p>Sin hábitos aún.</p>
+        <p class="vacio-sub">Tocá el + para agregar uno.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- --------- VISTA EDITOR DE HÁBITO --------- -->
+  <section id="vistaHabito" class="vista">
+    <input type="text" id="tituloHabito" class="titulo-editable" placeholder="Nombre del hábito">
+
+    <div class="seccion">
+      <div class="seccion-título">
+        <span>📅</span>
+        <h2>Historial</h2>
+      </div>
+      <div id="historialHabito" class="items"></div>
+      <button id="eliminarHabito" class="btn-bloque durazno" style="margin-top:16px;">Eliminar hábito</button>
+    </div>
+  </section>
+
 </main>
 
 <!-- ============ BOTÓN FLOTANTE NUEVO ============ -->
@@ -129,6 +169,13 @@
       <path d="M4 3h11l5 5v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M8 13h8"/><path d="M8 17h5"/>
     </svg>
     <span>Notas</span>
+  </button>
+
+  <button id="navHabitos" class="nav-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+    </svg>
+    <span>Hábitos</span>
   </button>
 
   <button id="btnGrabar" class="fab-grabar" aria-label="Grabar y agendar">

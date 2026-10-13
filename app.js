@@ -7,11 +7,13 @@ const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const CHAR_UUID    = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
 /* ---------- Estado ---------- */
-let vista = "notas";          // notas | listas | nota | lista
+let vista = "notas";          // notas | listas | nota | lista | habitos
 let notas = [];
 let listas = [];
+let habitos = [];
 let idAbierto = null;
 let filtro = "";
+let ultimaGratitude = null;
 
 /* ---------- Atajos ---------- */
 const $ = id => document.getElementById(id);
@@ -21,13 +23,24 @@ const $ = id => document.getElementById(id);
    ============================================================ */
 function cargar(){
   try{ notas  = JSON.parse(localStorage.getItem("llavero_notas")  || "[]"); }catch{ notas  = []; }
-  try{ listas = JSON.parse(localStorage.getItem("llavero_listas") || "[]"); }catch{ listas = []; }
+  try{ listas = JSON.parse(localStorage.getItem("llavero_listas") || "[]"); }catch{ listas  = []; }
+  try{ habitos = JSON.parse(localStorage.getItem("llavero_habitos") || "[]"); }catch{ habitos = []; }
+  const hoyKey = "llavero_gratitude_" + new Date().toISOString().slice(0,10);
+  try{ ultimaGratitude = JSON.parse(localStorage.getItem(hoyKey) || "null"); }catch{ ultimaGratitude = null; }
+  if (!ultimaGratitude) ultimaGratitude = { texto:"", fecha:new Date().toISOString().slice(0,10) };
 }
 function guardar(){
   try{
     localStorage.setItem("llavero_notas",  JSON.stringify(notas));
     localStorage.setItem("llavero_listas", JSON.stringify(listas));
   }catch(e){ avisar("No se pudo guardar en este navegador", "error"); }
+}
+function guardarHabitos(){
+  try{ localStorage.setItem("llavero_habitos", JSON.stringify(habitos)); }catch(e){ avisar("No se pudo guardar en este navegador", "error"); }
+}
+function guardarGratitude(texto){
+  const hoyKey = "llavero_gratitude_" + new Date().toISOString().slice(0,10);
+  localStorage.setItem(hoyKey, JSON.stringify({ texto, fecha:new Date().toISOString().slice(0,10) }));
 }
 const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 
@@ -60,22 +73,26 @@ function ir(destino){
   vista = destino;
   document.querySelectorAll(".vista").forEach(v => v.classList.remove("activa"));
 
-  const mapa = { notas:"vistaNotas", listas:"vistaListas", nota:"vistaNota", lista:"vistaLista" };
+  const mapa = { notas:"vistaNotas", listas:"vistaListas", nota:"vistaNota", lista:"vistaLista", habitos:"vistaHabitos", habito:"vistaHabito" };
   $(mapa[destino]).classList.add("activa");
 
-  const enIndice = destino === "notas" || destino === "listas";
+  const enIndice = destino === "notas" || destino === "listas" || destino === "habitos";
   $("btnNuevo").classList.toggle("oculto", !enIndice);
   $("buscador").parentElement.style.display = enIndice ? "flex" : "none";
 
   $("navNotas").classList.toggle("activo",  destino === "notas");
   $("navListas").classList.toggle("activo", destino === "listas");
+  $("navHabitos").classList.toggle("activo", destino === "habitos");
 
-  const titulos = { notas:"Notas", listas:"Listas", nota:"Editar nota", lista:"Editar lista" };
+  const titulos = { notas:"Notas", listas:"Listas", nota:"Editar nota", lista:"Editar lista", habitos:"Hábitos", habito:"Editar hábito" };
   $("migas").textContent = titulos[destino];
 
   window.scrollTo(0,0);
   if (destino === "notas")  pintarNotas();
   if (destino === "listas") pintarListas();
+  if (destino === "habitos") pintarHabitos();
+  if (destino === "habito") pintarHistorial();
+  if (destino === "habitos") pintarGratitude();
 }
 
 /* ============================================================
@@ -223,6 +240,115 @@ function agregarItem(texto){
 }
 
 /* ============================================================
+   HÁBITOS + GRATITUD
+   ============================================================ */
+function pintarHabitos(){
+  const grid = $("gridHabitos");
+  grid.innerHTML = "";
+  const visibles = habitos.filter(h => h.activo !== false);
+  $("vacioHabitos").classList.toggle("mostrar", visibles.length === 0);
+
+  visibles.forEach(h => {
+    const card = document.createElement("button");
+    card.className = "tarjeta";
+    card.style.background = colorPara(h.id);
+    card.innerHTML = `
+      <h3></h3>
+      <p></p>
+      <span class="pie">${fecha(h.editado)}</span>`;
+    card.querySelector("h3").textContent = h.titulo || "Sin título";
+    const completados = h.dias.filter(d => d.hecho).length;
+    const progreso = h.dias.length ? completados / h.dias.length * 100 : 0;
+    card.querySelector("p").innerHTML = `
+      <div style="height:6px;background:#211F2D;border-radius:3px;overflow:hidden;margin:4px 0">
+        <div style="height:100%;width:${progreso}%;background:var(--menta);transition:width 0.3s"></div>
+      </div>
+      <span style="font-size:11px;opacity:0.7">${completados}/${h.dias.length} días</span>`;
+    card.onclick = () => editarHabito(h.id);
+    grid.appendChild(card);
+  });
+}
+
+function editarHabito(id){
+  const h = habitos.find(x => x.id === id);
+  if (!h) return;
+  idAbierto = id;
+  $("tituloHabito").value = h.titulo;
+  ir("habito");
+}
+
+function crearHabito(){
+  const h = { id:nuevoId(), titulo:"", dias:[], activo:true, editado:Date.now() };
+  habitos.push(h);
+  guardarHabitos();
+  editarHabito(h.id);
+  $("tituloHabito").focus();
+}
+
+function guardarHabito(){
+  const h = habitos.find(x => x.id === idAbierto);
+  if (!h) return;
+  h.titulo = $("tituloHabito").value;
+  h.editado = Date.now();
+  guardar();
+  guardarHabitos();
+}
+
+function marcarDiaHabito(fechaStr, hecho){
+  if (!idAbierto) return;
+  const h = habitos.find(x => x.id === idAbierto);
+  if (!h) return;
+  let dia = h.dias.find(d => d.fecha === fechaStr);
+  if (!dia) { dia = { fecha:fechaStr, hecho:false }; h.dias.push(dia); }
+  dia.hecho = hecho;
+  guardarHabitos();
+  pintarHabitos();
+}
+
+function eliminarHabito(){
+  if (!confirm("¿Eliminar este hábito?")) return;
+  habitos = habitos.filter(h => h.id !== idAbierto);
+  guardarHabitos();
+  ir("habitos");
+}
+
+function pintarHistorial(){
+  const container = $("#historialHabito");
+  container.innerHTML = "";
+  if (!idAbierto) return;
+  const h = habitos.find(x => x.id === idAbierto);
+  if (!h || !h.dias.length) {
+    container.innerHTML = `<p class="mini">Sin registros aún. Tocá los círculos para marcar.</p>`;
+    return;
+  }
+  h.dias.forEach(d => {
+    const div = document.createElement("div");
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "8px";
+    div.style.margin = "4px 0";
+    div.innerHTML = `
+      <span style="width:20px;font-size:12px;color:var(--texto-tenue)">${d.fecha.slice(-5)}</span>
+      <div style="
+        width:16px;height:16px;border:2px solid var(--negro);
+        border-radius:4px;background:${d.hecho ? 'var(--menta)' : 'var(--superficie2)'};
+        flex-shrink:0;cursor:pointer;"
+        onclick="marcarDiaHabito('${d.fecha}', !${d.hecho})">
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function pintarGratitude(){
+  $("#gratitud").value = ultimaGratitude ? ultimaGratitude.texto : "";
+}
+function guardarGratitude(){
+  const texto = $("#gratitud").value.trim();
+  ultimaGratitude = { texto, fecha:new Date().toISOString().slice(0,10) };
+  localStorage.setItem("llavero_gratitude_" + ultimaGratitude.fecha, JSON.stringify(ultimaGratitude));
+}
+
+/* ============================================================
    GRABACIÓN DE AUDIO
    ============================================================ */
 let grabadora = null;
@@ -350,6 +476,24 @@ $("btnSync").onclick = sincronizar;
 
 /* --- Cambiar tema --- */
 $("btnTema").onclick = alternarTema;
+
+/* --- Navegación de hábitos --- */
+$("navHabitos").onclick = () => { filtro = ""; ir("habitos"); };
+$("nuevoHabito").onclick = crearHabito;
+
+$("btnNuevo").onclick = () => {
+  if (vista === "notas") crearNota();
+  else if (vista === "listas") crearLista();
+  else if (vista === "habitos") crearHabito();
+  else if (vista === "habito") guardarHabito();
+};
+
+/* --- Editor de hábito --- */
+$("tituloHabito").oninput = guardarHabito;
+$("eliminarHabito").onclick = eliminarHabito;
+
+/* --- Gratitud --- */
+$("#gratitud").onblur = guardarGratitude;
 
 /* --- Editor de nota --- */
 $("tituloNota").oninput     = guardarNota;
